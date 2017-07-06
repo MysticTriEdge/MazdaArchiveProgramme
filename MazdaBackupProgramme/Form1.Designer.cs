@@ -36,6 +36,9 @@
             this.btnRunManual = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
+            this.cbxInteriorImages = new System.Windows.Forms.CheckBox();
+            this.cbxExteriorImages = new System.Windows.Forms.CheckBox();
+            this.btnImageArchive = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -76,11 +79,11 @@
             // 
             // btnRunManual
             // 
-            this.btnRunManual.Location = new System.Drawing.Point(344, 267);
+            this.btnRunManual.Location = new System.Drawing.Point(319, 100);
             this.btnRunManual.Name = "btnRunManual";
-            this.btnRunManual.Size = new System.Drawing.Size(75, 23);
+            this.btnRunManual.Size = new System.Drawing.Size(125, 23);
             this.btnRunManual.TabIndex = 4;
-            this.btnRunManual.Text = "Manual Run";
+            this.btnRunManual.Text = "Run DigiStore Archive";
             this.btnRunManual.UseVisualStyleBackColor = true;
             this.btnRunManual.Click += new System.EventHandler(this.btnRunManual_Click);
             // 
@@ -90,21 +93,52 @@
             // 
             // notifyIcon1
             // 
-            this.notifyIcon1.Text = "notifyIcon1";
-            this.notifyIcon1.Visible = true;
-            this.notifyIcon1.Click += new System.EventHandler(this.notifyIcon1_Click);
-            this.notifyIcon1.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info; //Shows the info icon so the user doesn't thing there is an error.
+            this.notifyIcon1.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.notifyIcon1.BalloonTipText = "Timer Will continue to run";
             this.notifyIcon1.BalloonTipTitle = "Mazda Backup Programme Minimized";
+            this.notifyIcon1.Icon = global::MazdaBackupProgramme.Properties.Resources.Tray;
             this.notifyIcon1.Text = "Mazda Backup Programme";
-            this.notifyIcon1.Icon = Properties.Resources.Tray;
-
+            this.notifyIcon1.Visible = true;
+            this.notifyIcon1.Click += new System.EventHandler(this.notifyIcon1_Click);
+            // 
+            // cbxInteriorImages
+            // 
+            this.cbxInteriorImages.AutoSize = true;
+            this.cbxInteriorImages.Location = new System.Drawing.Point(86, 204);
+            this.cbxInteriorImages.Name = "cbxInteriorImages";
+            this.cbxInteriorImages.Size = new System.Drawing.Size(95, 17);
+            this.cbxInteriorImages.TabIndex = 5;
+            this.cbxInteriorImages.Text = "Interior Images";
+            this.cbxInteriorImages.UseVisualStyleBackColor = true;
+            // 
+            // cbxExteriorImages
+            // 
+            this.cbxExteriorImages.AutoSize = true;
+            this.cbxExteriorImages.Location = new System.Drawing.Point(86, 242);
+            this.cbxExteriorImages.Name = "cbxExteriorImages";
+            this.cbxExteriorImages.Size = new System.Drawing.Size(98, 17);
+            this.cbxExteriorImages.TabIndex = 6;
+            this.cbxExteriorImages.Text = "Exterior Images";
+            this.cbxExteriorImages.UseVisualStyleBackColor = true;
+            // 
+            // btnImageArchive
+            // 
+            this.btnImageArchive.Location = new System.Drawing.Point(319, 238);
+            this.btnImageArchive.Name = "btnImageArchive";
+            this.btnImageArchive.Size = new System.Drawing.Size(112, 23);
+            this.btnImageArchive.TabIndex = 7;
+            this.btnImageArchive.Text = "Run Image Archive";
+            this.btnImageArchive.UseVisualStyleBackColor = true;
+            this.btnImageArchive.Click += new System.EventHandler(this.btnImageArchive_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(515, 350);
+            this.Controls.Add(this.btnImageArchive);
+            this.Controls.Add(this.cbxExteriorImages);
+            this.Controls.Add(this.cbxInteriorImages);
             this.Controls.Add(this.btnRunManual);
             this.Controls.Add(this.lblRunTime);
             this.Controls.Add(this.lblNow);
@@ -113,7 +147,7 @@
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "Mazda Backup Programme";
+            this.Text = "Mazda Archive Programme";
             this.Resize += new System.EventHandler(this.Form1_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -129,6 +163,9 @@
         private System.Windows.Forms.Button btnRunManual;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
+        private System.Windows.Forms.CheckBox cbxInteriorImages;
+        private System.Windows.Forms.CheckBox cbxExteriorImages;
+        private System.Windows.Forms.Button btnImageArchive;
     }
 }
 

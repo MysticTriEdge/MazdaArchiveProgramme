@@ -24,15 +24,17 @@ namespace MazdaBackupProgramme
 
         private void btnRunManual_Click(object sender, EventArgs e)
         {
-            dgiStoreBackup();
+            dgiStoreArchive();
         }
 
 
-        public void dgiStoreBackup()
+        public void dgiStoreArchive()
         {
-            //Calculate what 3 months ago would be by subtracting 3 from todays date month
-            int monthFrom = DateTime.Now.Month - 3;
+            //Calculate what 3 months ago would be by subtracting 3 from todays date month and add newMonthFrom in case of archive over new year
+            // int monthFrom = DateTime.Now.Month - 3;
+            int monthFrom = 1 - 3;
             int yearFrom = DateTime.Now.Year;
+            int newMonthFrom = 0;
 
             //Set directory for the files to come from and where to go
             string stagingFolder = @"C:\Users\grimwoodb\Desktop\Test Folder";
@@ -73,8 +75,14 @@ namespace MazdaBackupProgramme
                             Directory.Move(flder, archiveFolder + dirflderName + "\\" + fldName + "\\" + "Copy");
                         }
                     }
-                    //If the date is a previous year to this year also back up (to fix issues with backups going over 3 months into previous year)
-                    else if (fldYear < yearFrom)
+                    //Add the monthFrom which will be below zero to 12 to find out what the previous years month would be
+                    if (monthFrom <= 0)
+                    {
+                        newMonthFrom = 12 + monthFrom;
+                    }
+
+                    //If the date is a previous year use tge newMonth to find out what the month would be in the previous year
+                    else if (fldMonth <= newMonthFrom && fldYear < yearFrom)
                     {
                         //Add the path of the folder to a list of backedup folders
                         movedFolders.Add(flder);
@@ -144,7 +152,7 @@ namespace MazdaBackupProgramme
             //If the current time is 21:00 then run the digiStoreBackup
             if (timeNow == "21:00")
             {
-                dgiStoreBackup();
+                dgiStoreArchive();
             }
 
         }
@@ -170,6 +178,79 @@ namespace MazdaBackupProgramme
                 //Remove the form from the windows taskbar
                 this.ShowInTaskbar = false;
             }
+        }
+
+
+        public void assetFolderArchive(string sourceFolder)
+        {
+            //Archive Folder Location
+            string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
+
+
+            //Go through all directories in the source folder ad list them (interior or exterior or both folder checkox decision)
+            string[] allfiles = System.IO.Directory.GetFiles(sourceFolder, "*.*", System.IO.SearchOption.AllDirectories);
+
+            //Get the month to backup from and todays year for working out the calculations later
+            int monthBack = Convert.ToInt32(DateTime.Now.AddMonths(-3).Month.ToString());
+            int yearNow = Convert.ToInt32(DateTime.Now.Year.ToString());
+
+            int previousYearMonth = 0;
+
+            //Loop through all the collected files in the list
+            foreach (string interiorFile in allfiles)
+            {
+                //Get the file information from the file loop
+                FileInfo fi = new FileInfo(interiorFile);
+                //Get the last modiefied date and put to string.
+                string fulllastModified = fi.LastWriteTime.ToString().Substring(0, 10);
+                //Split apart the full last modified to get the month and year the file was changed
+                int lastModifiedMonth = Convert.ToInt32(fulllastModified.Substring(3,2));
+                int lastModifiedYear = Convert.ToInt32(fulllastModified.Substring(6, 4));
+
+                //If the month is lower then the Month we want to archive from and in the same year
+                if (lastModifiedMonth <= monthBack && lastModifiedYear == yearNow)
+                {
+                    //ADD CREATE DIRECTORY AND FILE MOVE SCRIPT
+                }
+                
+                //if Monthback is 0 or under work out what 3 months would be if it goes into previous year
+                if (monthBack <= 0)
+                {
+                    previousYearMonth = 12 + monthBack;
+                }
+
+                else if (lastModifiedMonth <= previousYearMonth && lastModifiedYear < yearNow)
+                {
+                    //ADD CREATE DIRECTORY AND FILE MOVE SCRIPT
+                }
+            }
+
+
+
+
+        }
+
+        private void btnImageArchive_Click(object sender, EventArgs e)
+        {
+            //If no checkboxes checked display error message
+            if (cbxExteriorImages.Checked == false && cbxInteriorImages.Checked == false)
+            {
+                MessageBox.Show("At least one checkbox must be ticked", "Error", MessageBoxButtons.OK);
+            }
+            //If interior Images checkbox checked run the archive with the interior folder
+            if (cbxInteriorImages.Checked == true)
+            {
+                string folderToArchive = @"C:\Users\grimwoodb\Desktop\Test Folder3\Image Master";
+                assetFolderArchive(folderToArchive);
+            }
+            //If exterior Images checkbox checked run the archive with the exterior folder
+            if (cbxExteriorImages.Checked == true)
+            {
+                string folderToArchive = @"C:\Users\grimwoodb\Desktop\Test Folder3\HTML5";
+                assetFolderArchive(folderToArchive);
+            }
+
+            
         }
     }
 }
