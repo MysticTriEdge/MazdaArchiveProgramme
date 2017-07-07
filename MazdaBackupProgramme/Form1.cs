@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MazdaBackupProgramme
 {
@@ -23,71 +24,106 @@ namespace MazdaBackupProgramme
         }
 
         int totalfiles = 0;
+        string typeMoved = "";
 
         private void btnRunManual_Click(object sender, EventArgs e)
         {
+            //Run digiStoreArchive
             dgiStoreArchive();
         }
 
 
         public void dgiStoreArchive()
         {
-            //Calculate what 3 months ago would be by subtracting 3 from todays date month and add newMonthFrom in case of archive over new year
-            // int monthFrom = DateTime.Now.Month - 3;
-            int monthFrom = 1 - 3;
-            int yearFrom = DateTime.Now.Year;
-            int newMonthFrom = 0;
-
-            //Set directory for the files to come from and where to go
-            string stagingFolder = @"C:\Users\grimwoodb\Desktop\Test Folder";
-            string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
-
-            //Create a string which will populate with the backed up folders
-            List<string> movedFolders = new List<string>();
-            DateTime compareDate = DateTime.Now.AddMonths(-3).Date;
-            //Check through the top folders(dirflder) in the stagingFolder
-            foreach (var dirflder in Directory.GetDirectories(stagingFolder))
+            //Get it to try the below code and if an error occurs using the catch give a message box with the error
+            try
             {
-                //remove the length of StagingFolder from the full path to the top folder giving just the locale folders
-                string dirflderName = dirflder.Remove(0, stagingFolder.Length);
+                //Set directory for the files to come from and where to go
+                string stagingFolder = @"C:\Users\grimwoodb\Desktop\Test Folder";
+                string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
 
-                //Check through each folder within the stagingFolder and locale
-                foreach (var flder in Directory.GetDirectories(stagingFolder + dirflderName))
+                //Create a string which will populate with the backed up folders
+                List<string> movedFolders = new List<string>();
+                //Create todays date 3 months ago
+                DateTime compareDate = DateTime.Now.AddMonths(-3).Date;
+                //Check through the top folders(dirflder) in the stagingFolder
+                string[] dirsToCheck = Directory.GetDirectories(stagingFolder, "*", SearchOption.AllDirectories);
+
+                //Create list for the checked directories to go to
+                List<string> dirsChecked = new List<string>();
+
+                //Set a regular expression to find a speectic format. In this case ##-##-###
+                Regex rgx = new Regex(@"\d{2}-\d{2}-\d{4}");
+
+                //Loop through all the files needed to be checked
+                foreach (string dirChecking in dirsToCheck)
                 {
-                    //
-                    var fldName = new DirectoryInfo(flder).Name;
-                    string fldD = fldName.Substring(0, 10).Replace("-","/");
-                    DateTime flderDate = Convert.ToDateTime(fldD);
+                    //Find directories that have a date in their fodler name if not will be empty
+                    Match dirMatch = rgx.Match(dirChecking);
 
-                    
-                    DirectoryInfo flderDI = new DirectoryInfo(flder);
-
-                    //Check if the month is lower or equal to what it would be 3 months ago and that the year is the same
-                    if (flderDate < compareDate)
+                    //if the Match is not empty then it has found a date and the folder is correct for backup
+                    if (dirMatch.Length > 0)
                     {
-                        //Add the path of the folder to a list of backedup folders
-                        movedFolders.Add(flder);
+                        //Take the folder name and change it to a date format for comparrison
+                        DateTime flderDate = Convert.ToDateTime(dirMatch.ToString().Replace("-", "/"));
 
-                        //Check if the archive folder and locale exist and then create if not
-                        if (!Directory.Exists(archiveFolder + dirflderName + "\\" + fldName))
+                        //See if the folderdate is older then the compareDate
+                        if (flderDate < compareDate)
                         {
-                            Directory.CreateDirectory(archiveFolder + dirflderName);
-                            Directory.Move(flder, archiveFolder + dirflderName + "\\" + fldName);
+                            //Add to the checked directories list where the folders to be archived are stored
+                            dirsChecked.Add(dirChecking);
                         }
-                        //If the backup date folder has the same create a duplicate with Copy on the end of the folder name
-                        else if (!Directory.Exists(archiveFolder + dirflderName + "\\" + fldName))
-                        {
-                            Directory.Move(flder, archiveFolder + dirflderName + "\\" + fldName + "\\" + "Copy");
-                        }
+
+
+
                     }
 
                 }
 
-            }
+                //Loop through the folders that need archiving
+                foreach (string flder in dirsChecked)
+                {
+                    //Get info on the original directory 
+                    DirectoryInfo dirInfo = new DirectoryInfo(flder);
 
-            //Create the Log File
-            createLogFile(movedFolders);
-            totalfiles = totalfiles + movedFolders.Count;
+                    //Get the original directory and remove its original folder
+                    string removeCameFrom = flder.Substring(stagingFolder.Length);
+                    //Add the archove folder to the path
+                    string fullDir = archiveFolder + removeCameFrom;
+
+                    
+                    //If the folder already exists delete the old one and move the new one
+                    if (Directory.Exists(fullDir))
+                    {
+                        Directory.Delete(fullDir, true);
+                        Directory.Move(flder, fullDir);
+
+                    }
+                    //If the folder does not exist create up to the folder to add in and then move the folder
+                    else if (!Directory.Exists(fullDir))
+                    {
+
+                        string toCreate = fullDir.Substring(0, fullDir.Length - dirInfo.Name.Length);
+                        Directory.CreateDirectory(toCreate);
+                        Directory.Move(flder, fullDir);
+                    }
+                    //Add the folder to the list of moved folders
+                    movedFolders.Add(flder);
+                }
+
+                //Update the number of total files by the number of movedfiles
+                totalfiles = totalfiles + movedFolders.Count;
+                //Update the type moved for the finishing message to display
+                typeMoved = "folders";
+                //Run the createLogFile function
+                createLogFile(movedFolders);
+            }
+            //If the above parts break display an error message of the problem
+            catch ( Exception e)
+            {
+                MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
+            }
+                
 
         }
 
@@ -144,6 +180,7 @@ namespace MazdaBackupProgramme
 
         public void assetFolderArchive(string sourceFolder)
         {
+            try { 
             //Archive Folder Location
             string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
 
@@ -165,7 +202,9 @@ namespace MazdaBackupProgramme
                 }
             }
 
+            //Create a day to compare against
             DateTime compareDate = DateTime.Now.AddMonths(-3);
+            //Create a list to be populated by the moved files
             List<string> movedFiles = new List<string>();
 
             //Loop through all the collected files in the list
@@ -176,19 +215,26 @@ namespace MazdaBackupProgramme
 
             if (fi.LastWriteTime < compareDate)
                 {
-                    //ADD CREATE DIRECTORY AND FILE MOVE SCRIPT
-                    string dir = interiorFile.Substring(sourceFolder.Length);
+                    //Get the parent of the current folder so that up to that can be removed and replaced
+                    string dirToRemove = Directory.GetParent(sourceFolder).FullName;
+                        
+                    //Create a string of the folder path while removing the original folder it came from
+                    string dir = interiorFile.Substring(dirToRemove.Length);
                     dir = dir.Replace(fi.Name, "");
-                    string fulldir = archiveFolder + "\\Image Master" + dir;
-
+                    //Add the archive folder to the new path and then add the next folder and the rest of the path
+                    string fulldir = archiveFolder + dir;
+                    
+                    //Create the directory
                     new FileInfo(fulldir).Directory.Create();
-
+                    
+                    //If the file exists delete the original and then move the new one
                     if(File.Exists(fulldir + fi.Name))
                     {
                         File.Delete(fulldir + fi.Name);
                         File.Move(interiorFile, fulldir + fi.Name);
                         movedFiles.Add(interiorFile);
                     }
+                    //If the file does not exist move the file
                     else if (!File.Exists(fulldir + fi.Name))
                     {
                         File.Move(interiorFile, fulldir + fi.Name);
@@ -197,8 +243,19 @@ namespace MazdaBackupProgramme
 
                 }
             }
-            createLogFile(movedFiles);
+            //Update the total files with the amount of files moved
             totalfiles = totalfiles + movedFiles.Count;
+            //Change the type moved to files for the finished message
+            typeMoved = "files";
+            //Run the createLogFile function
+            createLogFile(movedFiles);
+
+            }
+            //If any errors display an error message with the error given
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
+            }
         }
 
         private void btnImageArchive_Click(object sender, EventArgs e)
@@ -258,7 +315,7 @@ namespace MazdaBackupProgramme
 
         public void finshedRunning()
         {
-            MessageBox.Show(totalfiles.ToString() + " Files/Folder Groups have been archived", "Archive Complete", MessageBoxButtons.OK);
+            MessageBox.Show(totalfiles.ToString() + " "+ typeMoved + " have been archived", "Archive Complete", MessageBoxButtons.OK);
             totalfiles = 0;
         }
 
