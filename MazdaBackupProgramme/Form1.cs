@@ -22,6 +22,8 @@ namespace MazdaBackupProgramme
             
         }
 
+        int totalfiles = 0;
+
         private void btnRunManual_Click(object sender, EventArgs e)
         {
             dgiStoreArchive();
@@ -42,7 +44,7 @@ namespace MazdaBackupProgramme
 
             //Create a string which will populate with the backed up folders
             List<string> movedFolders = new List<string>();
-
+            DateTime compareDate = DateTime.Now.AddMonths(-3).Date;
             //Check through the top folders(dirflder) in the stagingFolder
             foreach (var dirflder in Directory.GetDirectories(stagingFolder))
             {
@@ -52,13 +54,16 @@ namespace MazdaBackupProgramme
                 //Check through each folder within the stagingFolder and locale
                 foreach (var flder in Directory.GetDirectories(stagingFolder + dirflderName))
                 {
-                    //Take the name, month and year from the name of the folder in stagingFolder and locale
+                    //
                     var fldName = new DirectoryInfo(flder).Name;
-                    int fldMonth = Convert.ToInt32(fldName.Substring(3, 2));
-                    int fldYear = Convert.ToInt32(fldName.Substring(6, 4));
+                    string fldD = fldName.Substring(0, 10).Replace("-","/");
+                    DateTime flderDate = Convert.ToDateTime(fldD);
+
+                    
+                    DirectoryInfo flderDI = new DirectoryInfo(flder);
 
                     //Check if the month is lower or equal to what it would be 3 months ago and that the year is the same
-                    if (fldMonth <= monthFrom && fldYear == yearFrom)
+                    if (flderDate < compareDate)
                     {
                         //Add the path of the folder to a list of backedup folders
                         movedFolders.Add(flder);
@@ -75,59 +80,15 @@ namespace MazdaBackupProgramme
                             Directory.Move(flder, archiveFolder + dirflderName + "\\" + fldName + "\\" + "Copy");
                         }
                     }
-                    //Add the monthFrom which will be below zero to 12 to find out what the previous years month would be
-                    if (monthFrom <= 0)
-                    {
-                        newMonthFrom = 12 + monthFrom;
-                    }
-
-                    //If the date is a previous year use tge newMonth to find out what the month would be in the previous year
-                    else if (fldMonth <= newMonthFrom && fldYear < yearFrom)
-                    {
-                        //Add the path of the folder to a list of backedup folders
-                        movedFolders.Add(flder);
-
-                        //Repeat of same code above (if possible consolidate)
-                        if (!Directory.Exists(archiveFolder + dirflderName + "\\" + fldName))
-                        {
-                            Directory.CreateDirectory(archiveFolder + dirflderName);
-                            Directory.Move(flder, archiveFolder + dirflderName + "\\" + fldName);
-                        }
-                        else if (!Directory.Exists(archiveFolder + dirflderName + "\\" + fldName))
-                        {
-                            Directory.Move(flder, archiveFolder + dirflderName + "\\" + fldName + "\\" + "Copy");
-                        }
-                    }
 
                 }
 
             }
 
-            //Where the log txt file will be or is to be created
-            string logfilePath = @"C:\Users\grimwoodb\Desktop\Test Folder 2\archived.txt";
+            //Create the Log File
+            createLogFile(movedFolders);
+            totalfiles = totalfiles + movedFolders.Count;
 
-            //Add todays date above the list of archived folders
-            movedFolders.Insert(0, DateTime.Now.ToString());
-
-            //Check if the log file exists and if so add the newest list to the end
-            if (File.Exists(logfilePath))
-            {
-                //Loop through each string in the list of archived folders and write to each line of the file
-                foreach (string line in movedFolders)
-                {
-                    TextWriter tsw = new StreamWriter(logfilePath, true);
-                    tsw.WriteLine(line);
-                    tsw.Close();
-                }
-                
-            }
-
-            //Otherwise create the file with the list
-            else {
-                File.WriteAllLines(logfilePath, movedFolders);
-            }
-            
-            
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -190,44 +151,54 @@ namespace MazdaBackupProgramme
             //Go through all directories in the source folder ad list them (interior or exterior or both folder checkox decision)
             string[] allfiles = System.IO.Directory.GetFiles(sourceFolder, "*.*", System.IO.SearchOption.AllDirectories);
 
-            //Get the month to backup from and todays year for working out the calculations later
-            int monthBack = Convert.ToInt32(DateTime.Now.AddMonths(-3).Month.ToString());
-            int yearNow = Convert.ToInt32(DateTime.Now.Year.ToString());
+            //Take all the files and add them to a list so we can remove any unwanted files
+            List<string> filestocheck = new List<string>(allfiles);
+            //Create a list for the list of files we want to keep
+            List<string> checkedfiles = new List<string>();
 
-            int previousYearMonth = 0;
-
-            //Loop through all the collected files in the list
-            foreach (string interiorFile in allfiles)
+            //Loop through all files in the List and add the files that are not .psds to the checkfiles list
+            foreach (string f in filestocheck)
             {
-                //Get the file information from the file loop
-                FileInfo fi = new FileInfo(interiorFile);
-                //Get the last modiefied date and put to string.
-                string fulllastModified = fi.LastWriteTime.ToString().Substring(0, 10);
-                //Split apart the full last modified to get the month and year the file was changed
-                int lastModifiedMonth = Convert.ToInt32(fulllastModified.Substring(3,2));
-                int lastModifiedYear = Convert.ToInt32(fulllastModified.Substring(6, 4));
-
-                //If the month is lower then the Month we want to archive from and in the same year
-                if (lastModifiedMonth <= monthBack && lastModifiedYear == yearNow)
+                if(!f.EndsWith(".psd"))
                 {
-                    //ADD CREATE DIRECTORY AND FILE MOVE SCRIPT
-                }
-                
-                //if Monthback is 0 or under work out what 3 months would be if it goes into previous year
-                if (monthBack <= 0)
-                {
-                    previousYearMonth = 12 + monthBack;
-                }
-
-                else if (lastModifiedMonth <= previousYearMonth && lastModifiedYear < yearNow)
-                {
-                    //ADD CREATE DIRECTORY AND FILE MOVE SCRIPT
+                    checkedfiles.Add(f);
                 }
             }
 
+            DateTime compareDate = DateTime.Now.AddMonths(-3);
+            List<string> movedFiles = new List<string>();
 
+            //Loop through all the collected files in the list
+            foreach (string interiorFile in checkedfiles)
+            {
+                //Get the file information from the file loop
+                FileInfo fi = new FileInfo(interiorFile);
 
+            if (fi.LastWriteTime < compareDate)
+                {
+                    //ADD CREATE DIRECTORY AND FILE MOVE SCRIPT
+                    string dir = interiorFile.Substring(sourceFolder.Length);
+                    dir = dir.Replace(fi.Name, "");
+                    string fulldir = archiveFolder + "\\Image Master" + dir;
 
+                    new FileInfo(fulldir).Directory.Create();
+
+                    if(File.Exists(fulldir + fi.Name))
+                    {
+                        File.Delete(fulldir + fi.Name);
+                        File.Move(interiorFile, fulldir + fi.Name);
+                        movedFiles.Add(interiorFile);
+                    }
+                    else if (!File.Exists(fulldir + fi.Name))
+                    {
+                        File.Move(interiorFile, fulldir + fi.Name);
+                        movedFiles.Add(interiorFile);
+                    }
+
+                }
+            }
+            createLogFile(movedFiles);
+            totalfiles = totalfiles + movedFiles.Count;
         }
 
         private void btnImageArchive_Click(object sender, EventArgs e)
@@ -252,5 +223,53 @@ namespace MazdaBackupProgramme
 
             
         }
+
+        public void createLogFile(List<string> movedFolders)
+        {
+            //Where the log txt file will be or is to be created
+            string logfilePath = @"C:\Users\grimwoodb\Desktop\Test Folder 2\archived - " + DateTime.Now.ToString("dd/MM/yyyy") + ".txt";
+
+            logfilePath = logfilePath.Replace("/", "-");
+
+            //Add todays date above the list of archived folders
+            movedFolders.Insert(0, DateTime.Now.ToString());
+
+            //Check if the log file exists and if so add the newest list to the end
+            if (File.Exists(logfilePath))
+            {
+                //Loop through each string in the list of archived folders and write to each line of the file
+                foreach (string line in movedFolders)
+                {
+                    TextWriter tsw = new StreamWriter(logfilePath, true);
+                    tsw.WriteLine(line);
+                    tsw.Close();
+                }
+
+            }
+
+            //Otherwise create the file with the list
+            else
+            {
+                File.WriteAllLines(logfilePath, movedFolders);
+            }
+
+            finshedRunning();
+        }
+
+        public void finshedRunning()
+        {
+            MessageBox.Show(totalfiles.ToString() + " Files/Folder Groups have been archived", "Archive Complete", MessageBoxButtons.OK);
+            totalfiles = 0;
+        }
+
+
+
+
+
+
+
+
+
+
     }
 }
