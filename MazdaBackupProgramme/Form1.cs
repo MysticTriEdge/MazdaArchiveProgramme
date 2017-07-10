@@ -17,10 +17,9 @@ namespace MazdaBackupProgramme
         public Form1()
         {
             InitializeComponent();
-            //Set timer interval of 1 second and start
-            timer1.Interval = (1000) * (1);
-            timer1.Start();
             
+            backgroundWorker1.WorkerReportsProgress = true;
+            backgroundWorker2.WorkerReportsProgress = true;
         }
 
         int totalfiles = 0;
@@ -28,18 +27,21 @@ namespace MazdaBackupProgramme
 
         private void btnRunManual_Click(object sender, EventArgs e)
         {
-            //Run digiStoreArchive
-            dgiStoreArchive();
+            //Run digiStoreArchive in bgworker
+            btnImageArchive.Enabled = false;
+            btnRunManual.Enabled = false;
+            
+            backgroundWorker1.RunWorkerAsync();
         }
 
 
-        public void dgiStoreArchive()
+        public void dgiStoreArchive(string stagingFolder)
         {
+            totalfiles = 0;
             //Get it to try the below code and if an error occurs using the catch give a message box with the error
             try
             {
-                //Set directory for the files to come from and where to go
-                string stagingFolder = @"C:\Users\grimwoodb\Desktop\Test Folder";
+                //Set directory for the archive folder
                 string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
 
                 //Create a string which will populate with the backed up folders
@@ -79,6 +81,7 @@ namespace MazdaBackupProgramme
                     }
 
                 }
+                int fldercount = 0;
 
                 //Loop through the folders that need archiving
                 foreach (string flder in dirsChecked)
@@ -91,7 +94,7 @@ namespace MazdaBackupProgramme
                     //Add the archove folder to the path
                     string fullDir = archiveFolder + removeCameFrom;
 
-                    
+
                     //If the folder already exists delete the old one and move the new one
                     if (Directory.Exists(fullDir))
                     {
@@ -108,6 +111,9 @@ namespace MazdaBackupProgramme
                         Directory.Move(flder, fullDir);
                     }
                     //Add the folder to the list of moved folders
+                    fldercount++;
+                    int bgpbpercentage = fldercount * 100 / dirsChecked.Count;
+                    backgroundWorker1.ReportProgress(bgpbpercentage);
                     movedFolders.Add(flder);
                 }
 
@@ -118,38 +124,17 @@ namespace MazdaBackupProgramme
                 //Run the createLogFile function
                 createLogFile(movedFolders);
             }
-            //If the above parts break display an error message of the problem
-            catch ( Exception e)
+            catch (Exception e)
             {
-                MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
-            }
-                
+                //If the above parts break display an error message of the problem
+                if (e.ToString().Contains("Cross-thread"))
+                {
 
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            //Set time we want the programme to auto run
-            var runTime = "21:00";
-            //Update the label with the time
-            lblRunTime.Text = runTime.ToString();
-
-            //Get the current hour
-            int hourNow = DateTime.Now.Hour;
-
-            //Get the current minute
-            int minNow = DateTime.Now.Minute;
-
-            //Combine both minute and hour into a HH:MM format
-            string timeNow = hourNow + ":" + minNow;
-
-            //Update the label with the current hour and minute
-            lblNow.Text = timeNow;
-
-            //If the current time is 21:00 then run the digiStoreBackup
-            if (timeNow == "21:00")
-            {
-                dgiStoreArchive();
+                }
+                else
+                {
+                    MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
+                }
             }
 
         }
@@ -180,6 +165,8 @@ namespace MazdaBackupProgramme
 
         public void assetFolderArchive(string sourceFolder)
         {
+
+            totalfiles = 0;
             try { 
             //Archive Folder Location
             string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
@@ -193,13 +180,18 @@ namespace MazdaBackupProgramme
             //Create a list for the list of files we want to keep
             List<string> checkedfiles = new List<string>();
 
+                string[] excludes = { ".psd", ".aep" };
+
             //Loop through all files in the List and add the files that are not .psds to the checkfiles list
             foreach (string f in filestocheck)
             {
-                if(!f.EndsWith(".psd"))
-                {
-                    checkedfiles.Add(f);
-                }
+                    foreach (string exclude in excludes)
+                        { 
+                         if (!f.EndsWith(exclude))
+                        {
+                            checkedfiles.Add(f);
+                        }
+                    }
             }
 
             //Create a day to compare against
@@ -207,6 +199,7 @@ namespace MazdaBackupProgramme
             //Create a list to be populated by the moved files
             List<string> movedFiles = new List<string>();
 
+                int filecount = 0;
             //Loop through all the collected files in the list
             foreach (string interiorFile in checkedfiles)
             {
@@ -242,6 +235,11 @@ namespace MazdaBackupProgramme
                     }
 
                 }
+
+                    filecount++;
+                    int percentage = filecount * 100 / checkedfiles.Count;
+                    backgroundWorker2.ReportProgress(percentage);
+
             }
             //Update the total files with the amount of files moved
             totalfiles = totalfiles + movedFiles.Count;
@@ -254,17 +252,97 @@ namespace MazdaBackupProgramme
             //If any errors display an error message with the error given
             catch (Exception e)
             {
-                MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
+                if (e.ToString().Contains("Cross-thread"))
+                {
+
+                }
+                else
+                {
+                    MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
+                }
             }
         }
 
         private void btnImageArchive_Click(object sender, EventArgs e)
         {
+            btnImageArchive.Enabled = false;
+            btnRunManual.Enabled = false;
+            //Run image archiver in bgworker2
+            backgroundWorker2.RunWorkerAsync();
+          
+        }
+
+        public void createLogFile(List<string> movedFolders)
+        {
+            //Try the below code and if failure then catch the error and display
+            try
+            {
+                //Where the log txt file will be or is to be created
+                string logfilePath = @"C:\Users\grimwoodb\Desktop\Test Folder 2\archived - " + DateTime.Now.ToString("dd/MM/yyyy") + ".txt";
+
+                logfilePath = logfilePath.Replace("/", "-");
+
+                //Add todays date above the list of archived folders
+                movedFolders.Insert(0, DateTime.Now.ToString());
+
+                //Check if the log file exists and if so add the newest list to the end
+                if (File.Exists(logfilePath))
+                {
+                    //Loop through each string in the list of archived folders and write to each line of the file
+                    foreach (string line in movedFolders)
+                    {
+                        TextWriter tsw = new StreamWriter(logfilePath, true);
+                        tsw.WriteLine(line);
+                        tsw.Close();
+                    }
+
+                }
+           
+            //Otherwise create the file with the list
+            else
+            {
+                File.WriteAllLines(logfilePath, movedFolders);
+            }
+
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
+            }
+
+        }
+
+        public void finshedRunning()
+        {
+            MessageBox.Show(totalfiles.ToString() + " " + typeMoved + " have been archived", "Archive Complete", MessageBoxButtons.OK);
+            btnImageArchive.BeginInvoke((Action)delegate () { btnImageArchive.Enabled = true; });
+            btnRunManual.BeginInvoke((Action)delegate () { btnRunManual.Enabled = true; });
+            tbCustomFolderPath.BeginInvoke((Action)delegate () { tbCustomFolderPath.Text = ""; });
+            progressBar1.BeginInvoke((Action)delegate () { progressBar1.Value = 0; });
+            progressBar2.BeginInvoke((Action)delegate () { progressBar2.Value = 0; });
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            string stagingFolder = @"C:\Users\grimwoodb\Desktop\Test Folder";
+            dgiStoreArchive(stagingFolder);
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            progressBar1.Value = e.ProgressPercentage;
+        }
+
+        private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
+        {
             //If no checkboxes checked display error message
-            if (cbxExteriorImages.Checked == false && cbxInteriorImages.Checked == false)
+            if (cbxExteriorImages.Checked == false && cbxInteriorImages.Checked == false && cbxCustomFolder.Checked == false)
             {
                 MessageBox.Show("At least one checkbox must be ticked", "Error", MessageBoxButtons.OK);
             }
+            //If the customfolder checkbox is checked but the folder path is empty
+           
+
             //If interior Images checkbox checked run the archive with the interior folder
             if (cbxInteriorImages.Checked == true)
             {
@@ -278,55 +356,130 @@ namespace MazdaBackupProgramme
                 assetFolderArchive(folderToArchive);
             }
 
-            
+            if (String.IsNullOrEmpty(tbCustomFolderPath.Text))
+            {
+                MessageBox.Show("The file path is empty please choose a folder", "Error", MessageBoxButtons.OK);
+            }
+
+            if (cbxCustomFolder.Checked == true && !String.IsNullOrEmpty(tbCustomFolderPath.Text))
+            {
+                DialogResult dialogresult = MessageBox.Show("This will archive all files 3 months and older for the selected folder. Is this ok?", "Confirm", MessageBoxButtons.YesNo);
+                if(dialogresult == DialogResult.Yes)
+                {
+                    string folderToArchive = tbCustomFolderPath.Text;
+                    customArchive(folderToArchive);
+                }          
+            }
         }
 
-        public void createLogFile(List<string> movedFolders)
+        private void backgroundWorker2_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            //Where the log txt file will be or is to be created
-            string logfilePath = @"C:\Users\grimwoodb\Desktop\Test Folder 2\archived - " + DateTime.Now.ToString("dd/MM/yyyy") + ".txt";
+            progressBar2.Value = e.ProgressPercentage;
+        }
 
-            logfilePath = logfilePath.Replace("/", "-");
-
-            //Add todays date above the list of archived folders
-            movedFolders.Insert(0, DateTime.Now.ToString());
-
-            //Check if the log file exists and if so add the newest list to the end
-            if (File.Exists(logfilePath))
+        private void cbxCustomFolder_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbxCustomFolder.Checked == true)
             {
-                //Loop through each string in the list of archived folders and write to each line of the file
-                foreach (string line in movedFolders)
-                {
-                    TextWriter tsw = new StreamWriter(logfilePath, true);
-                    tsw.WriteLine(line);
-                    tsw.Close();
-                }
+                btnSelectCustomFolder.Enabled = true;
+            }
+            if (cbxCustomFolder.Checked == false)
+            {
+                btnSelectCustomFolder.Enabled = false;
+            }
+        }
 
+        private void btnSelectCustomFolder_Click(object sender, EventArgs e)
+        {
+            if(folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                tbCustomFolderPath.Text = folderBrowserDialog1.SelectedPath;
             }
 
-            //Otherwise create the file with the list
-            else
-            {
-                File.WriteAllLines(logfilePath, movedFolders);
-            }
+        }
 
+        private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
             finshedRunning();
         }
 
-        public void finshedRunning()
+        public void customArchive(string stagingFolder)
         {
-            MessageBox.Show(totalfiles.ToString() + " "+ typeMoved + " have been archived", "Archive Complete", MessageBoxButtons.OK);
+            try { 
+            int filecount = 0;
             totalfiles = 0;
+            //Set directory for the archive folder
+            string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
+
+            List<string> filestoCheck = new List<string>(Directory.GetFiles(stagingFolder, "*.*", SearchOption.AllDirectories));
+            List<string> directories = new List<string>();
+            List<string> movedFiles = new List<string>();
+            //Create todays date 3 months ago
+            DateTime compareDate = DateTime.Now.AddMonths(-3).Date;
+
+            foreach (string check in filestoCheck)
+            {
+                FileInfo checkFile = new FileInfo(check);
+
+                if (checkFile.LastWriteTime < compareDate)
+                {
+                    string path = checkFile.FullName.ToString().Remove(checkFile.FullName.Length - checkFile.Name.Length);
+
+                    path = path.Replace(stagingFolder, "");
+
+                    path = archiveFolder + "\\" + path;
+
+
+
+                    if (Directory.Exists(path))
+                    {
+                        if (File.Exists(checkFile.ToString()))
+                        {
+                            File.Move(checkFile.ToString(), path + "\\" + checkFile.Name);
+                            movedFiles.Add(check);
+                        }
+                    }
+
+                    if (!Directory.Exists(path))
+                    {
+                        DirectoryInfo diCreate = Directory.CreateDirectory(path);
+                        File.Move(checkFile.ToString(), path + "\\" + checkFile.Name);
+                        movedFiles.Add(check);
+
+                    }
+                    filecount++;
+                    int percentage = filecount * 100 / filestoCheck.Count;
+                    backgroundWorker2.ReportProgress(percentage);
+
+                }
+
+
+            }
+            //Update the total files with the amount of files moved
+            totalfiles = totalfiles + filecount;
+            //Change the type moved to files for the finished message
+            typeMoved = "files";
+            //Run the createLogFile function
+            createLogFile(movedFiles);
+        }
+            //If any errors display an error message with the error given
+            catch (Exception e)
+            {
+                if (e.ToString().Contains("Cross-thread"))
+                {
+
+                }
+                else
+                {
+                    MessageBox.Show(e.ToString(), "Error", MessageBoxButtons.OK);
+                }
+            }
+
         }
 
+        private void lnklblExclude_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
 
-
-
-
-
-
-
-
-
+        }
     }
 }
