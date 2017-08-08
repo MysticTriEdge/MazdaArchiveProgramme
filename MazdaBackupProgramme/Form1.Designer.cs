@@ -62,10 +62,10 @@
             // notifyIcon1
             // 
             this.notifyIcon1.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.notifyIcon1.BalloonTipText = "Timer Will continue to run";
-            this.notifyIcon1.BalloonTipTitle = "Mazda Backup Programme Minimized";
+            this.notifyIcon1.BalloonTipText = "Any running archive will still run";
+            this.notifyIcon1.BalloonTipTitle = "Mazda Archive Programme Minimized";
             this.notifyIcon1.Icon = global::MazdaBackupProgramme.Properties.Resources.Tray;
-            this.notifyIcon1.Text = "Mazda Backup Programme";
+            this.notifyIcon1.Text = "Mazda Archive Programme";
             this.notifyIcon1.Visible = true;
             this.notifyIcon1.Click += new System.EventHandler(this.notifyIcon1_Click);
             // 
@@ -137,12 +137,12 @@
             // lnklblExclude
             // 
             this.lnklblExclude.AutoSize = true;
-            this.lnklblExclude.Location = new System.Drawing.Point(310, 79);
+            this.lnklblExclude.Location = new System.Drawing.Point(106, 76);
             this.lnklblExclude.Name = "lnklblExclude";
-            this.lnklblExclude.Size = new System.Drawing.Size(124, 13);
+            this.lnklblExclude.Size = new System.Drawing.Size(161, 13);
             this.lnklblExclude.TabIndex = 12;
             this.lnklblExclude.TabStop = true;
-            this.lnklblExclude.Text = "Exclude certain file types";
+            this.lnklblExclude.Text = "Click to exclude certain file types";
             this.lnklblExclude.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnklblExclude_LinkClicked);
             // 
             // btnSelectCustomFolder
@@ -186,6 +186,7 @@
             // 
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
             // backgroundWorker2
             // 

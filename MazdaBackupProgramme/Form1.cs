@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.VisualBasic;
 
 namespace MazdaBackupProgramme
 {
@@ -42,7 +43,7 @@ namespace MazdaBackupProgramme
             try
             {
                 //Set directory for the archive folder
-                string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
+                string archiveFolder = @"\\bur5fs06\New Media Data\# archive";
 
                 //Create a string which will populate with the backed up folders
                 List<string> movedFolders = new List<string>();
@@ -83,6 +84,24 @@ namespace MazdaBackupProgramme
                 }
                 int fldercount = 0;
 
+                foreach (string fldr in dirsChecked.ToList())
+                {
+                    if (dirsChecked.Any(fldr.Contains))
+                        {
+                            foreach (string fldercheck in dirsChecked.ToList())
+                        {
+                            if (fldercheck.ToString().Contains(fldr) && fldercheck.Length > fldr.Length)
+                            {
+                                dirsChecked.Remove(fldercheck);
+                            }
+                        }
+
+                            
+                        }
+
+                }
+
+
                 //Loop through the folders that need archiving
                 foreach (string flder in dirsChecked)
                 {
@@ -90,32 +109,48 @@ namespace MazdaBackupProgramme
                     DirectoryInfo dirInfo = new DirectoryInfo(flder);
 
                     //Get the original directory and remove its original folder
-                    string removeCameFrom = flder.Substring(stagingFolder.Length);
+                    //string removeCameFrom = flder.Substring(stagingFolder.Length);
                     //Add the archove folder to the path
-                    string fullDir = archiveFolder + removeCameFrom;
+                    string fullDir = archiveFolder + flder;
 
-
-                    //If the folder already exists delete the old one and move the new one
-                    if (Directory.Exists(fullDir))
+                    //Check if inital directory exists and if now create it
+                    if (Directory.Exists(fullDir) == false)
                     {
-                        Directory.Delete(fullDir, true);
-                        Directory.Move(flder, fullDir);
-
+                        Directory.CreateDirectory(fullDir);
                     }
-                    //If the folder does not exist create up to the folder to add in and then move the folder
-                    else if (!Directory.Exists(fullDir))
+
+                    FileInfo[] filesCopy = dirInfo.GetFiles("*",SearchOption.AllDirectories);
+
+                    //For each file in the flder find and copy to its directory innthe archive folder
+                    foreach(FileInfo fileToCopy in filesCopy)
                     {
 
-                        string toCreate = fullDir.Substring(0, fullDir.Length - dirInfo.Name.Length);
-                        Directory.CreateDirectory(toCreate);
-                        Directory.Move(flder, fullDir);
+                        string newpath = archiveFolder + fileToCopy.DirectoryName;
+
+                        if (Directory.Exists(newpath) == false)
+                        {
+                            Directory.CreateDirectory(newpath);
+                        }
+
+                        //Create the string of the full path for the file
+                        string pathtoCopyTo = Path.Combine(newpath, fileToCopy.Name);
+
+                        //Copy File and overwrite if already exists
+                        fileToCopy.CopyTo(pathtoCopyTo, true);
                     }
+
                     //Add the folder to the list of moved folders
                     fldercount++;
                     int bgpbpercentage = fldercount * 100 / dirsChecked.Count;
                     backgroundWorker1.ReportProgress(bgpbpercentage);
                     movedFolders.Add(flder);
                 }
+                foreach (string fldertoDel in dirsChecked)
+                {
+                    //Delete the directory after all folders are copied
+                    Directory.Delete(fldertoDel);
+                }
+
 
                 //Update the number of total files by the number of movedfiles
                 totalfiles = totalfiles + movedFolders.Count;
@@ -169,7 +204,7 @@ namespace MazdaBackupProgramme
             totalfiles = 0;
             try { 
             //Archive Folder Location
-            string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
+            string archiveFolder = @"\\bur5fs06\New Media Data\# archive";
 
 
             //Go through all directories in the source folder ad list them (interior or exterior or both folder checkox decision)
@@ -278,7 +313,7 @@ namespace MazdaBackupProgramme
             try
             {
                 //Where the log txt file will be or is to be created
-                string logfilePath = @"C:\Users\grimwoodb\Desktop\Test Folder 2\archived - " + DateTime.Now.ToString("dd/MM/yyyy") + ".txt";
+                string logfilePath = @"\\bur5fs06\New Media Data\# archive\archived - " + DateTime.Now.ToString("dd/MM/yyyy") + ".txt";
 
                 logfilePath = logfilePath.Replace("/", "-");
 
@@ -324,7 +359,7 @@ namespace MazdaBackupProgramme
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            string stagingFolder = @"C:\Users\grimwoodb\Desktop\Test Folder";
+            string stagingFolder = @"\\bur5fs06\DigitalStore";
             dgiStoreArchive(stagingFolder);
         }
 
@@ -346,13 +381,13 @@ namespace MazdaBackupProgramme
             //If interior Images checkbox checked run the archive with the interior folder
             if (cbxInteriorImages.Checked == true)
             {
-                string folderToArchive = @"C:\Users\grimwoodb\Desktop\Test Folder3\Image Master";
+                string folderToArchive = @"\\bur5fs06\New Media Data\New Media Group\Clients\Mazda\# Mazda Interior Image Master";
                 assetFolderArchive(folderToArchive);
             }
             //If exterior Images checkbox checked run the archive with the exterior folder
             if (cbxExteriorImages.Checked == true)
             {
-                string folderToArchive = @"C:\Users\grimwoodb\Desktop\Test Folder3\HTML5";
+                string folderToArchive = @"\\bur5fs06\New Media Data\New Media Group\Clients\Mazda\HTML5\#EXTERIORS";
                 assetFolderArchive(folderToArchive);
             }
 
@@ -409,7 +444,9 @@ namespace MazdaBackupProgramme
             int filecount = 0;
             totalfiles = 0;
             //Set directory for the archive folder
-            string archiveFolder = @"C:\Users\grimwoodb\Desktop\Test Folder 2";
+            string archiveFolder = @"\\bur5fs06\New Media Data\# archive";
+
+                
 
             List<string> filestoCheck = new List<string>(Directory.GetFiles(stagingFolder, "*.*", SearchOption.AllDirectories));
             List<string> directories = new List<string>();
@@ -479,7 +516,14 @@ namespace MazdaBackupProgramme
 
         private void lnklblExclude_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
+            Form2 excludeList = new Form2();
+            excludeList.Show();
 
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            finshedRunning();
         }
     }
 }
