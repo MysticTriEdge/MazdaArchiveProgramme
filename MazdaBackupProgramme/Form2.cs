@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace MazdaBackupProgramme
 {
@@ -15,9 +16,29 @@ namespace MazdaBackupProgramme
         public Form2()
         {
             InitializeComponent();
+            if (Exclusions.fileexcludes.Count > 0)
+            {
+                foreach (FileInfo l in Exclusions.fileexcludes)
+                {
+                    lbxExcludeFile.Items.Add(l.Name);
+                    Exclusions.fileexcludes = null;
+                }
+                
+
+            }
+            if (Exclusions.excludes.Count > 0)
+            {
+                foreach(string l in Exclusions.excludes)
+                {
+                    lbxExcludeList.Items.Add(l);
+                    Exclusions.excludes = null;
+                }
+               
+            }
+
         }
 
-        List<string> excludes = new List<string>();
+        
 
         private void btnAddlbx_Click(object sender, EventArgs e)
         {
@@ -61,10 +82,51 @@ namespace MazdaBackupProgramme
         private void btnDone_Click(object sender, EventArgs e)
         {
             
-
+            if (lbxExcludeList.Items.Count > 0)
+            { 
             foreach (string item in lbxExcludeList.Items)
             {
-                excludes.Add(item);
+                Exclusions.excludes.Add(item);
+            }
+            }
+            this.Hide();
+
+
+
+        }
+
+        private void btnAddExcludeFile_Click(object sender, EventArgs e)
+        {
+
+            OpenFileDialog choofdlog = new OpenFileDialog();
+            choofdlog.Filter = "All Files (*.*)|*.*";
+            choofdlog.FilterIndex = 1;
+            choofdlog.Multiselect = true;
+
+            if (choofdlog.ShowDialog() == DialogResult.OK)
+            {
+                string[] arrAllFiles = choofdlog.FileNames; //used when Multiselect = true
+
+               
+                               
+                foreach(string addfile in arrAllFiles)
+                {
+                    FileInfo fi = new FileInfo(addfile);
+                    lbxExcludeFile.Items.Add(fi.Name);
+                    Exclusions.fileexcludes.Add(fi);
+                    
+                }
+
+            }
+
+
+        }
+
+        private void btnRmvExcludeFile_Click(object sender, EventArgs e)
+        {
+            for (int i = lbxExcludeFile.SelectedIndices.Count - 1; i >= 0; i--)
+            {
+                lbxExcludeFile.Items.RemoveAt(lbxExcludeFile.SelectedIndices[i]);
             }
         }
     }

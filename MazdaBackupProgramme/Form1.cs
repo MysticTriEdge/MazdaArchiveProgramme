@@ -147,8 +147,24 @@ namespace MazdaBackupProgramme
                 }
                 foreach (string fldertoDel in dirsChecked)
                 {
-                    //Delete the directory after all folders are copied
-                    Directory.Delete(fldertoDel);
+
+                    if (!Directory.Exists(fldertoDel))
+                    {
+
+                    }
+                    else if (Directory.Exists(fldertoDel))
+                    {
+                        string[] filestoSet = Directory.GetFiles(fldertoDel, "*", SearchOption.AllDirectories);
+                        foreach (string file in filestoSet)
+                        {
+                            File.SetAttributes(file, FileAttributes.Normal);
+                        }
+                        //Delete the directory after all folders are copied
+
+                        Directory.Delete(fldertoDel, true);
+                    }
+                   
+                   
                 }
 
 
@@ -259,15 +275,24 @@ namespace MazdaBackupProgramme
                     if(File.Exists(fulldir + fi.Name))
                     {
                         File.Delete(fulldir + fi.Name);
-                        File.Move(interiorFile, fulldir + fi.Name);
+                        File.Copy(interiorFile, fulldir + fi.Name);
                         movedFiles.Add(interiorFile);
+                            File.Delete(interiorFile);
                     }
                     //If the file does not exist move the file
                     else if (!File.Exists(fulldir + fi.Name))
                     {
-                        File.Move(interiorFile, fulldir + fi.Name);
+                        File.Copy(interiorFile, fulldir + fi.Name);
                         movedFiles.Add(interiorFile);
+                            File.Delete(interiorFile);
                     }
+
+                        int folderfilecount = Directory.GetFiles(fi.Directory.ToString(), "*.*", System.IO.SearchOption.AllDirectories).Length;
+
+                        if (folderfilecount == 0)
+                        {
+                            Directory.Delete(fi.Directory.ToString());
+                        }
 
                 }
 
@@ -449,12 +474,63 @@ namespace MazdaBackupProgramme
                 
 
             List<string> filestoCheck = new List<string>(Directory.GetFiles(stagingFolder, "*.*", SearchOption.AllDirectories));
-            List<string> directories = new List<string>();
             List<string> movedFiles = new List<string>();
+            List<string> filesChecked = new List<string>();
+                List<string> filescheckedandexcluded = new List<string>();
             //Create todays date 3 months ago
             DateTime compareDate = DateTime.Now.AddMonths(-3).Date;
 
-            foreach (string check in filestoCheck)
+                foreach(string excludecheck in filestoCheck)
+                {
+
+                    if (Exclusions.excludes.Count > 0 && Exclusions.fileexcludes.Count > 0)
+                    {
+                        foreach (string exclusion in Exclusions.excludes)
+                        {
+                            if (!excludecheck.EndsWith(exclusion))
+                            {
+                                foreach (FileInfo f in Exclusions.fileexcludes)
+                                {
+                                    if (excludecheck != f.Name)
+                                    {
+                                        filescheckedandexcluded.Add(excludecheck);
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                    if (Exclusions.excludes.Count == 0 && Exclusions.fileexcludes.Count > 0)
+                    {
+                        foreach (FileInfo f in Exclusions.fileexcludes)
+                        {
+                            if (excludecheck != f.Name)
+                            {
+                                filescheckedandexcluded.Add(excludecheck);
+                            }
+                        }
+                    }
+
+                    if (Exclusions.excludes.Count > 0 && Exclusions.fileexcludes.Count == 0)
+                    {
+                        foreach (string exclusion in Exclusions.excludes)
+                        {
+                            if (!excludecheck.EndsWith(exclusion))
+                            {
+                                        filescheckedandexcluded.Add(excludecheck);
+
+                            }
+                        }
+                    }
+
+
+
+
+                }
+                
+
+            foreach (string check in filescheckedandexcluded)
             {
                 FileInfo checkFile = new FileInfo(check);
 
@@ -472,20 +548,29 @@ namespace MazdaBackupProgramme
                     {
                         if (File.Exists(checkFile.ToString()))
                         {
-                            File.Move(checkFile.ToString(), path + "\\" + checkFile.Name);
+                            File.Copy(checkFile.ToString(), path + "\\" + checkFile.Name);
                             movedFiles.Add(check);
+                                File.Delete(checkFile.ToString());
                         }
                     }
 
                     if (!Directory.Exists(path))
                     {
                         DirectoryInfo diCreate = Directory.CreateDirectory(path);
-                        File.Move(checkFile.ToString(), path + "\\" + checkFile.Name);
+                        File.Copy(checkFile.ToString(), path + "\\" + checkFile.Name);
                         movedFiles.Add(check);
+                            File.Delete(checkFile.ToString());
 
-                    }
-                    filecount++;
-                    int percentage = filecount * 100 / filestoCheck.Count;
+                        }
+
+                        int folderfilecount = Directory.GetFiles(checkFile.Directory.ToString(), "*.*", System.IO.SearchOption.AllDirectories).Length;
+
+                        if (folderfilecount == 0)
+                        {
+                            //  Directory.Delete(fi.Directory.ToString());
+                        }
+                        filecount++;
+                    int percentage = filecount * 100 / filescheckedandexcluded.Count;
                     backgroundWorker2.ReportProgress(percentage);
 
                 }
@@ -498,6 +583,8 @@ namespace MazdaBackupProgramme
             typeMoved = "files";
             //Run the createLogFile function
             createLogFile(movedFiles);
+                Exclusions.fileexcludes = null;
+                Exclusions.excludes = null;
         }
             //If any errors display an error message with the error given
             catch (Exception e)
