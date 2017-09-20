@@ -84,6 +84,8 @@ namespace MazdaBackupProgramme
                 }
                 int fldercount = 0;
 
+
+                //Remove substring directories to get just the date folders
                 foreach (string fldr in dirsChecked.ToList())
                 {
                     if (dirsChecked.Any(fldr.Contains))
@@ -145,16 +147,20 @@ namespace MazdaBackupProgramme
                     backgroundWorker1.ReportProgress(bgpbpercentage);
                     movedFolders.Add(flder);
                 }
+                //Run through the list of flders to delete
                 foreach (string fldertoDel in dirsChecked)
                 {
-
+                    //If the directory doesn't exists ignore it.
                     if (!Directory.Exists(fldertoDel))
                     {
 
                     }
+                    //if the directory exsists..
                     else if (Directory.Exists(fldertoDel))
                     {
+                        //Get all the files in the directory
                         string[] filestoSet = Directory.GetFiles(fldertoDel, "*", SearchOption.AllDirectories);
+                        //Loop through files and set the attributes to normal to stop issues when deleting the direcotry
                         foreach (string file in filestoSet)
                         {
                             File.SetAttributes(file, FileAttributes.Normal);
@@ -270,23 +276,23 @@ namespace MazdaBackupProgramme
                     
                     //Create the directory
                     new FileInfo(fulldir).Directory.Create();
-                    
-                    //If the file exists delete the original and then move the new one
-                    if(File.Exists(fulldir + fi.Name))
+
+                        //If the file exists delete the one in the arcvhive folder, copy the file one to be archived then delete the original
+                        if (File.Exists(fulldir + fi.Name))
                     {
                         File.Delete(fulldir + fi.Name);
                         File.Copy(interiorFile, fulldir + fi.Name);
                         movedFiles.Add(interiorFile);
                             File.Delete(interiorFile);
                     }
-                    //If the file does not exist move the file
+                    //If the file does not exist copy the file then dleete the original
                     else if (!File.Exists(fulldir + fi.Name))
                     {
                         File.Copy(interiorFile, fulldir + fi.Name);
                         movedFiles.Add(interiorFile);
                             File.Delete(interiorFile);
                     }
-
+                        //if the folder that files were copied and deleted from becomes and it has no other folders within with files delete the folder
                         int folderfilecount = Directory.GetFiles(fi.Directory.ToString(), "*.*", System.IO.SearchOption.AllDirectories).Length;
 
                         if (folderfilecount == 0)
@@ -480,6 +486,7 @@ namespace MazdaBackupProgramme
             //Create todays date 3 months ago
             DateTime compareDate = DateTime.Now.AddMonths(-3).Date;
 
+                //If any exclusions have been added check them against the files found
                 foreach(string excludecheck in filestoCheck)
                 {
 
@@ -529,7 +536,7 @@ namespace MazdaBackupProgramme
 
                 }
                 
-
+                //After the exclusions have been removed check the ramianing to see if they are older then the 3 month back date
             foreach (string check in filescheckedandexcluded)
             {
                 FileInfo checkFile = new FileInfo(check);
@@ -543,7 +550,7 @@ namespace MazdaBackupProgramme
                     path = archiveFolder + "\\" + path;
 
 
-
+                        //Copy if directory already exist oterwise create directory and then copy
                     if (Directory.Exists(path))
                     {
                         if (File.Exists(checkFile.ToString()))
@@ -562,12 +569,12 @@ namespace MazdaBackupProgramme
                             File.Delete(checkFile.ToString());
 
                         }
-
+                    //Delete the folder if the folder is empty
                         int folderfilecount = Directory.GetFiles(checkFile.Directory.ToString(), "*.*", System.IO.SearchOption.AllDirectories).Length;
 
                         if (folderfilecount == 0)
                         {
-                            //  Directory.Delete(fi.Directory.ToString());
+                            Directory.Delete(checkFile.Directory.ToString());
                         }
                         filecount++;
                     int percentage = filecount * 100 / filescheckedandexcluded.Count;

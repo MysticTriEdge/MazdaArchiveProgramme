@@ -16,6 +16,7 @@ namespace MazdaBackupProgramme
         public Form2()
         {
             InitializeComponent();
+            //Add what the exclusion list has to the list box and then clear the list so that it can be edited
             if (Exclusions.fileexcludes.Count > 0)
             {
                 foreach (FileInfo l in Exclusions.fileexcludes)
@@ -26,6 +27,7 @@ namespace MazdaBackupProgramme
                 
 
             }
+            //Add what the exclusion list has to the list box and then clear the list so that it can be edited
             if (Exclusions.excludes.Count > 0)
             {
                 foreach(string l in Exclusions.excludes)
@@ -59,6 +61,7 @@ namespace MazdaBackupProgramme
 
         public void addItemToList(string addItem)
         {
+            //Add Exclude item to list if it isn't already in there
             if (!lbxExcludeList.Items.Contains(addItem))
             {
                 lbxExcludeList.Items.Add(addItem);
@@ -73,6 +76,7 @@ namespace MazdaBackupProgramme
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
+            //Remove selected item(s)
             for (int i = lbxExcludeList.SelectedIndices.Count - 1; i >= 0; i--)
             {
                 lbxExcludeList.Items.RemoveAt(lbxExcludeList.SelectedIndices[i]);
@@ -112,9 +116,15 @@ namespace MazdaBackupProgramme
                 foreach(string addfile in arrAllFiles)
                 {
                     FileInfo fi = new FileInfo(addfile);
-                    lbxExcludeFile.Items.Add(fi.Name);
-                    Exclusions.fileexcludes.Add(fi);
-                    
+                    if (lbxExcludeFile.Items.Contains(fi.Name))
+                    {
+                        MessageBox.Show("Cannot add item with same name", "Error", MessageBoxButtons.OK);
+                    }
+                    if (!lbxExcludeFile.Items.Contains(fi.Name))
+                    {
+                        lbxExcludeFile.Items.Add(fi.Name);
+                        Exclusions.fileexcludes.Add(fi);
+                    }
                 }
 
             }
