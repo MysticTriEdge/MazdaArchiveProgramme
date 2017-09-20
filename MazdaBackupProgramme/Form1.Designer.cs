@@ -29,57 +29,29 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.lblNow = new System.Windows.Forms.Label();
-            this.lblRunTime = new System.Windows.Forms.Label();
             this.btnRunManual = new System.Windows.Forms.Button();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.cbxInteriorImages = new System.Windows.Forms.CheckBox();
             this.cbxExteriorImages = new System.Windows.Forms.CheckBox();
             this.btnImageArchive = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.lnklblExclude = new System.Windows.Forms.LinkLabel();
+            this.btnSelectCustomFolder = new System.Windows.Forms.Button();
+            this.tbCustomFolderPath = new System.Windows.Forms.TextBox();
+            this.cbxCustomFolder = new System.Windows.Forms.CheckBox();
+            this.progressBar2 = new System.Windows.Forms.ProgressBar();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(71, 58);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(70, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Current Time:";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(22, 100);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(119, 13);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "Programme Will Run At:";
-            // 
-            // lblNow
-            // 
-            this.lblNow.AutoSize = true;
-            this.lblNow.Location = new System.Drawing.Point(185, 58);
-            this.lblNow.Name = "lblNow";
-            this.lblNow.Size = new System.Drawing.Size(49, 13);
-            this.lblNow.TabIndex = 2;
-            this.lblNow.Text = "00:00:00";
-            // 
-            // lblRunTime
-            // 
-            this.lblRunTime.AutoSize = true;
-            this.lblRunTime.Location = new System.Drawing.Point(185, 100);
-            this.lblRunTime.Name = "lblRunTime";
-            this.lblRunTime.Size = new System.Drawing.Size(49, 13);
-            this.lblRunTime.TabIndex = 3;
-            this.lblRunTime.Text = "99:99:99";
             // 
             // btnRunManual
             // 
-            this.btnRunManual.Location = new System.Drawing.Point(319, 100);
+            this.btnRunManual.Location = new System.Drawing.Point(6, 19);
             this.btnRunManual.Name = "btnRunManual";
             this.btnRunManual.Size = new System.Drawing.Size(125, 23);
             this.btnRunManual.TabIndex = 4;
@@ -87,85 +59,177 @@
             this.btnRunManual.UseVisualStyleBackColor = true;
             this.btnRunManual.Click += new System.EventHandler(this.btnRunManual_Click);
             // 
-            // timer1
-            // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // notifyIcon1
             // 
             this.notifyIcon1.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.notifyIcon1.BalloonTipText = "Timer Will continue to run";
-            this.notifyIcon1.BalloonTipTitle = "Mazda Backup Programme Minimized";
+            this.notifyIcon1.BalloonTipText = "Any running archive will still run";
+            this.notifyIcon1.BalloonTipTitle = "Mazda Archive Programme Minimized";
             this.notifyIcon1.Icon = global::MazdaBackupProgramme.Properties.Resources.Tray;
-            this.notifyIcon1.Text = "Mazda Backup Programme";
+            this.notifyIcon1.Text = "Mazda Archive Programme";
             this.notifyIcon1.Visible = true;
             this.notifyIcon1.Click += new System.EventHandler(this.notifyIcon1_Click);
             // 
             // cbxInteriorImages
             // 
             this.cbxInteriorImages.AutoSize = true;
-            this.cbxInteriorImages.Location = new System.Drawing.Point(86, 204);
+            this.cbxInteriorImages.Location = new System.Drawing.Point(6, 28);
             this.cbxInteriorImages.Name = "cbxInteriorImages";
-            this.cbxInteriorImages.Size = new System.Drawing.Size(95, 17);
+            this.cbxInteriorImages.Size = new System.Drawing.Size(257, 17);
             this.cbxInteriorImages.TabIndex = 5;
-            this.cbxInteriorImages.Text = "Interior Images";
+            this.cbxInteriorImages.Text = "Interior Images Folder (excludes .psd\'s and aep\'s)";
             this.cbxInteriorImages.UseVisualStyleBackColor = true;
             // 
             // cbxExteriorImages
             // 
             this.cbxExteriorImages.AutoSize = true;
-            this.cbxExteriorImages.Location = new System.Drawing.Point(86, 242);
+            this.cbxExteriorImages.Location = new System.Drawing.Point(6, 51);
             this.cbxExteriorImages.Name = "cbxExteriorImages";
-            this.cbxExteriorImages.Size = new System.Drawing.Size(98, 17);
+            this.cbxExteriorImages.Size = new System.Drawing.Size(263, 17);
             this.cbxExteriorImages.TabIndex = 6;
-            this.cbxExteriorImages.Text = "Exterior Images";
+            this.cbxExteriorImages.Text = "Exterior Images Folder (excludes .psd\'s and .aep\'s)";
             this.cbxExteriorImages.UseVisualStyleBackColor = true;
             // 
             // btnImageArchive
             // 
-            this.btnImageArchive.Location = new System.Drawing.Point(319, 238);
+            this.btnImageArchive.Location = new System.Drawing.Point(295, 19);
             this.btnImageArchive.Name = "btnImageArchive";
-            this.btnImageArchive.Size = new System.Drawing.Size(112, 23);
+            this.btnImageArchive.Size = new System.Drawing.Size(139, 23);
             this.btnImageArchive.TabIndex = 7;
-            this.btnImageArchive.Text = "Run Image Archive";
+            this.btnImageArchive.Text = "Run Image Folder Archive";
             this.btnImageArchive.UseVisualStyleBackColor = true;
             this.btnImageArchive.Click += new System.EventHandler(this.btnImageArchive_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.progressBar1);
+            this.groupBox1.Controls.Add(this.btnRunManual);
+            this.groupBox1.Location = new System.Drawing.Point(34, 23);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(441, 113);
+            this.groupBox1.TabIndex = 8;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "DigiStore Archive";
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(6, 76);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(429, 23);
+            this.progressBar1.TabIndex = 5;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.lnklblExclude);
+            this.groupBox2.Controls.Add(this.btnSelectCustomFolder);
+            this.groupBox2.Controls.Add(this.tbCustomFolderPath);
+            this.groupBox2.Controls.Add(this.cbxCustomFolder);
+            this.groupBox2.Controls.Add(this.progressBar2);
+            this.groupBox2.Controls.Add(this.btnImageArchive);
+            this.groupBox2.Controls.Add(this.cbxExteriorImages);
+            this.groupBox2.Controls.Add(this.cbxInteriorImages);
+            this.groupBox2.Location = new System.Drawing.Point(34, 156);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(440, 169);
+            this.groupBox2.TabIndex = 9;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "HTML Folder Archive";
+            // 
+            // lnklblExclude
+            // 
+            this.lnklblExclude.AutoSize = true;
+            this.lnklblExclude.Location = new System.Drawing.Point(106, 76);
+            this.lnklblExclude.Name = "lnklblExclude";
+            this.lnklblExclude.Size = new System.Drawing.Size(161, 13);
+            this.lnklblExclude.TabIndex = 12;
+            this.lnklblExclude.TabStop = true;
+            this.lnklblExclude.Text = "Click to exclude certain file types";
+            this.lnklblExclude.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnklblExclude_LinkClicked);
+            // 
+            // btnSelectCustomFolder
+            // 
+            this.btnSelectCustomFolder.Enabled = false;
+            this.btnSelectCustomFolder.Location = new System.Drawing.Point(324, 96);
+            this.btnSelectCustomFolder.Name = "btnSelectCustomFolder";
+            this.btnSelectCustomFolder.Size = new System.Drawing.Size(94, 23);
+            this.btnSelectCustomFolder.TabIndex = 11;
+            this.btnSelectCustomFolder.Text = "Select Folder";
+            this.btnSelectCustomFolder.UseVisualStyleBackColor = true;
+            this.btnSelectCustomFolder.Click += new System.EventHandler(this.btnSelectCustomFolder_Click);
+            // 
+            // tbCustomFolderPath
+            // 
+            this.tbCustomFolderPath.Enabled = false;
+            this.tbCustomFolderPath.Location = new System.Drawing.Point(6, 98);
+            this.tbCustomFolderPath.Name = "tbCustomFolderPath";
+            this.tbCustomFolderPath.Size = new System.Drawing.Size(309, 20);
+            this.tbCustomFolderPath.TabIndex = 10;
+            // 
+            // cbxCustomFolder
+            // 
+            this.cbxCustomFolder.AutoSize = true;
+            this.cbxCustomFolder.Location = new System.Drawing.Point(7, 75);
+            this.cbxCustomFolder.Name = "cbxCustomFolder";
+            this.cbxCustomFolder.Size = new System.Drawing.Size(93, 17);
+            this.cbxCustomFolder.TabIndex = 9;
+            this.cbxCustomFolder.Text = "Custom Folder";
+            this.cbxCustomFolder.UseVisualStyleBackColor = true;
+            this.cbxCustomFolder.CheckedChanged += new System.EventHandler(this.cbxCustomFolder_CheckedChanged);
+            // 
+            // progressBar2
+            // 
+            this.progressBar2.Location = new System.Drawing.Point(6, 140);
+            this.progressBar2.Name = "progressBar2";
+            this.progressBar2.Size = new System.Drawing.Size(429, 23);
+            this.progressBar2.TabIndex = 8;
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+            // 
+            // backgroundWorker2
+            // 
+            this.backgroundWorker2.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
+            this.backgroundWorker2.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
+            this.backgroundWorker2.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(515, 350);
-            this.Controls.Add(this.btnImageArchive);
-            this.Controls.Add(this.cbxExteriorImages);
-            this.Controls.Add(this.cbxInteriorImages);
-            this.Controls.Add(this.btnRunManual);
-            this.Controls.Add(this.lblRunTime);
-            this.Controls.Add(this.lblNow);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.groupBox1);
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Mazda Archive Programme";
             this.Resize += new System.EventHandler(this.Form1_Resize);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label lblNow;
-        private System.Windows.Forms.Label lblRunTime;
         private System.Windows.Forms.Button btnRunManual;
-        private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.CheckBox cbxInteriorImages;
         private System.Windows.Forms.CheckBox cbxExteriorImages;
         private System.Windows.Forms.Button btnImageArchive;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.ProgressBar progressBar2;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker2;
+        private System.Windows.Forms.CheckBox cbxCustomFolder;
+        private System.Windows.Forms.Button btnSelectCustomFolder;
+        private System.Windows.Forms.TextBox tbCustomFolderPath;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.LinkLabel lnklblExclude;
     }
 }
 
